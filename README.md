@@ -9,7 +9,7 @@ In this article, we will examine how to collect logs from cloud native applicati
 Setting up Splunk
 ====
 
-1. Splunk Operator
+**1. Splunk Operator**
 
 We can easily setup Splunk on Kubernetes using the official operator - [link](https://github.com/splunk/splunk-operator/).
 
@@ -36,7 +36,7 @@ After few seconds, the operator will become ready to use, you can check the Pod 
       NAME                              READY   STATUS    RESTARTS   AGE
       splunk-operator-75b749554-vcpp8   1/1     Running   0          10s
 
-2. Splunk Standalone
+**2. Splunk Standalone**
 
 Now, we can deploy Splunk using this operator
 
@@ -58,7 +58,7 @@ After few moments, Splunk Pods will become available and ready to be used. We ca
       splunk-operator-75b749554-vcpp8       1/1     Running   0          6m38s
       splunk-s1-standalone-0                1/1     Running   0          5m56s
 
-3. Splunk credentials
+**3. Splunk credentials**
 
 To get the credentials to access Splunk Web UI with kubectl we can print the secret created as part of the deployment of Splunk as follows:
 
@@ -79,7 +79,7 @@ Then we can access the Web UI by setting up port-forwarding to Splunk as follows
       Forwarding from 127.0.0.1:8000 -> 8000
       Forwarding from [::1]:8000 -> 8000
 
-4. Splunk Connect
+**4. Splunk Connect**
 
 To be able to send logs to our Splunk deployment we need to get credentials. In our case, we specifically need [HEC (HTTP Event Collector) token](https://docs.splunk.com/Documentation/Splunk/8.2.4/Data/UsetheHTTPEventCollector).
 
@@ -88,7 +88,7 @@ To get the HEC token using kubectl
       $ kubectl get secret splunk-monit-secret -n monit -o jsonpath='{.data.hec_token}' |base64 -d
       377F2BE3-5186-9302-6555-F0A195021A5D
 
-Configuration file
+**Configuration file**
 
 We need to pupulate a custom version of [values.yaml](https://github.com/splunk/splunk-connect-for-kubernetes/blob/develop/helm-chart/splunk-connect-for-kubernetes/values.yaml) with information specific to our Splunk instance like hostname and HEC token.
 
@@ -185,6 +185,28 @@ Now we can install Splunk Connect on the monitoring namespace using the custom v
 After successfully deploying Splunk Connect an index called main will be created, we can check this in the Splunk UI (at http://localhost:8000 with login admin:${password})
 
 ![image](https://github.com/tushardashpute/app_logging_splunk/assets/74225291/0027ebf2-cd5f-4d64-b7ea-1481e5d591d2)
+
+Deploy Sample App in test1 namespace:
+
+      $ kubectl create ns test1
+      $ kubectl create deployment  python-flask --image=tushardashpute/python_app:v1 -n test1 --port=5000
+            deployment.apps/python-flask created
+      $ kubectl port-forward deploy/python-flask -n test1 5000:5000
+            Forwarding from 127.0.0.1:5000 -> 5000
+            Forwarding from [::1]:5000 -> 5000
+
+Now access the app using : localhost:5000
+
+![image](https://github.com/tushardashpute/app_logging_splunk/assets/74225291/8d2c9ab7-b7fe-4e48-b3fa-67728d0ab3c2)
+
+This app will log below messages:
+
+          app.logger.info('This is an INFO message')
+          app.logger.debug('This is a DEBUG message')
+          app.logger.warning('This is a WARNING message')
+          app.logger.error('This is an ERROR message')
+          app.logger.critical('This is a CRITICAL message')
+          return 'Hello, World!'
 
 We can also check logs from our Pods are forwarded properly to splunk
 

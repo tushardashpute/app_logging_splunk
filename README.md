@@ -6,7 +6,8 @@ For instance, one can build a dashboard for application crashes, or failures to 
 Splunk provides many integrations that makes it very easy to collect logs from a varied of sources. 
 In this article, we will examine how to collect logs from cloud native applications running on Kubernetes.
 
-**Setting up Splunk**
+Setting up Splunk
+====
 
 1. Splunk Operator
 
